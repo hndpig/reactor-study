@@ -4,11 +4,32 @@ import reactor.core.publisher.Flux;
 
 /**
  * @author hnd
- * @description: subscribe 方法示例
+ * @description: subscribe 简单方法示例
  * @date 2023/12/4 17:53
  */
 public class Subscribe {
     public static void main(String[] args) {
+        Flux<Integer> intFlux = Flux.range(1, 3);
+        intFlux.subscribe(i -> {
+            if (i == 3) {
+                throw new RuntimeException("got 3");//异常会终止操作
+            }
+            System.out.println(i);//1,2
+        }, e -> {
+            System.out.println(e);
+        },()->{
+            System.out.println("not execute ");
+        });
+    }
+
+    private static void subscribeAndCompleted() {
+        Flux<Integer> intFlux = Flux.range(1, 3);
+        intFlux.subscribe(System.out::println, Throwable::printStackTrace,()->{
+            System.out.println("completed");//完成时会执行，终止操作
+        });
+    }
+
+    private static void subscribeAndError() {
         Flux<Integer> intFlux1 = Flux.range(1, 3);
         intFlux1.subscribe();
         Flux<Integer> intFlux2 = Flux.range(1, 3);
