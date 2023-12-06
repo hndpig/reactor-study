@@ -1,5 +1,9 @@
 package com.hnd.reactor.create;
 
+import com.hnd.reactor.listener.MyEventProcessor;
+import com.hnd.reactor.listener.MyListener;
+import org.reactivestreams.Subscription;
+import reactor.core.publisher.BaseSubscriber;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
@@ -15,6 +19,11 @@ import java.util.stream.Collectors;
  */
 public class BridgeCreate {
     public static void main(String[] args) {
+        // syncCreate();
+        asyncBridgeCreate();
+    }
+
+    private static void syncCreate() {
         //同步？
         List<Integer> ints = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
@@ -32,8 +41,13 @@ public class BridgeCreate {
      * @Author hnd
      * @Date 11:50 2023/12/6
      * 异步
+        IGNORE： 完全忽略下游背压请求，这可能会在下游队列积满的时候导致 IllegalStateException。
+        ERROR： 当下游跟不上节奏的时候发出一个 IllegalStateException 的错误信号。
+        DROP：当下游没有准备好接收新的元素的时候抛弃这个元素。
+        LATEST：让下游只得到上游最新的元素。
+        BUFFER：（默认的）缓存所有下游没有来得及处理的元素（这个不限大小的缓存可能导致 OutOfMemoryError）
      **/
-    private static void syncBridgeCreate() {
+    private static void asyncBridgeCreate() {
         MyEventProcessor myEventProcessor = new MyEventProcessor();
         System.out.println("主线程：" + Thread.currentThread().threadId());
         Flux.create(new Consumer<FluxSink<String>>() {
@@ -44,6 +58,7 @@ public class BridgeCreate {
                     public void onDataChunk(List<String> data) {
                         System.out.println("序列生产线程ID :" + Thread.currentThread().threadId());
                         data.forEach(s -> sink.next(s));
+                       // processComplete();
                     }
 
                     @Override
@@ -56,13 +71,25 @@ public class BridgeCreate {
                         sink.error(e);
                     }
                 });
+
             }
-        }).subscribe(s -> {
-            System.out.println("消费线程id:" + Thread.currentThread().threadId() + "value=" + s);
+        }).subscribe(new BaseSubscriber<String>() {
+            @Override
+            protected void hookOnSubscribe(Subscription subscription) {
+                request(1);
+            }
 
+            @Override
+            protected void hookOnNext(String value) {
+                System.out.println("消费线程：" + Thread.currentThread().threadId() + "  " + value);
+                request(1);
+            }
+
+            @Override
+            protected void hookOnComplete() {
+                System.out.println("消费完成");
+            }
         });
-
-
         List<String> strs = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
             strs.add(i + "");
@@ -77,6 +104,11 @@ public class BridgeCreate {
                 }).start();
                 strs = new ArrayList<>();
             }
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
         }
     }
 }

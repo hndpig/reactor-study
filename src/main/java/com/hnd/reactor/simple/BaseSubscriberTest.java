@@ -11,7 +11,7 @@ import reactor.core.publisher.Flux;
  */
 public class BaseSubscriberTest {
     public static void main(String[] args) {
-
+        testRequest();
     }
 /**
  * @Author hnd
@@ -54,7 +54,7 @@ public class BaseSubscriberTest {
         BaseSubscriber baseSubscriber =  new BaseSubscriber<Integer>() {
              @Override
              protected void hookOnSubscribe(Subscription subscription) {
-                 request(2);//应该是个指针作用，
+                 request(20);//应该是个指针作用，
              }
 
              @Override
