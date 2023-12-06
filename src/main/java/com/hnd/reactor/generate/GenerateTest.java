@@ -14,6 +14,9 @@ import java.util.function.Consumer;
  */
 public class GenerateTest {
     public static void main(String[] args) {
+        /*
+         *这是一种同步地，逐个地产生值的方法
+        */
         Flux.generate(new Callable<String>() {
             @Override
             public String call() throws Exception {
