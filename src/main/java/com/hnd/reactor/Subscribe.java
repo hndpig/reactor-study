@@ -1,5 +1,6 @@
 package com.hnd.reactor;
 
+import org.reactivestreams.Subscription;
 import reactor.core.publisher.Flux;
 
 /**
@@ -9,6 +10,19 @@ import reactor.core.publisher.Flux;
  */
 public class Subscribe {
     public static void main(String[] args) {
+        Flux<Integer> intFlux = Flux.range(1, 10);
+        intFlux.subscribe(i -> {
+            System.out.println(i);//1,2
+        }, e -> {
+            System.out.println(e);//终止操作
+        },()->{
+            System.out.println("not execute ");
+        }, subscription -> {
+            subscription.request(5);//定义消费数量
+        });
+    }
+
+    private static void errorAndCompleted() {
         Flux<Integer> intFlux = Flux.range(1, 3);
         intFlux.subscribe(i -> {
             if (i == 3) {
@@ -16,7 +30,7 @@ public class Subscribe {
             }
             System.out.println(i);//1,2
         }, e -> {
-            System.out.println(e);
+            System.out.println(e);//终止操作
         },()->{
             System.out.println("not execute ");
         });
@@ -25,7 +39,7 @@ public class Subscribe {
     private static void subscribeAndCompleted() {
         Flux<Integer> intFlux = Flux.range(1, 3);
         intFlux.subscribe(System.out::println, Throwable::printStackTrace,()->{
-            System.out.println("completed");//完成时会执行，终止操作
+            System.out.println("completed");//序列消费完完成时会执行，终止操作
         });
     }
 
