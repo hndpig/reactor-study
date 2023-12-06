@@ -15,13 +15,34 @@ import java.util.stream.Collectors;
  */
 public class BridgeCreate {
     public static void main(String[] args) {
+        //同步？
+        List<Integer> ints = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            ints.add(i);
+        }
+        Flux.create(sink -> {
+            System.out.println("Thread id:" + Thread.currentThread().threadId());
+            ints.forEach(s -> sink.next(s));
+        }).subscribe(s -> {
+            System.out.println(" subscribe Thread id:" + Thread.currentThread().threadId() + " value=" + s);
+        });
+    }
+
+    /*
+     * @Author hnd
+     * @Date 11:50 2023/12/6
+     * 异步
+     **/
+    private static void syncBridgeCreate() {
         MyEventProcessor myEventProcessor = new MyEventProcessor();
+        System.out.println("主线程：" + Thread.currentThread().threadId());
         Flux.create(new Consumer<FluxSink<String>>() {
             @Override
             public void accept(FluxSink<String> sink) {
                 myEventProcessor.register(new MyListener<String>() {
                     @Override
                     public void onDataChunk(List<String> data) {
+                        System.out.println("序列生产线程ID :" + Thread.currentThread().threadId());
                         data.forEach(s -> sink.next(s));
                     }
 
@@ -36,11 +57,14 @@ public class BridgeCreate {
                     }
                 });
             }
-        }).subscribe(System.out::println);
+        }).subscribe(s -> {
+            System.out.println("消费线程id:" + Thread.currentThread().threadId() + "value=" + s);
+
+        });
 
 
         List<String> strs = new ArrayList<>();
-        for (int i = 1; i <= 100; i++) {
+        for (int i = 1; i <= 20; i++) {
             strs.add(i + "");
             if (i > 9 && i % 10 == 0) {
                 List<String> finalStrs = strs;
@@ -54,6 +78,5 @@ public class BridgeCreate {
                 strs = new ArrayList<>();
             }
         }
-
     }
 }
