@@ -1,4 +1,4 @@
-package com.hnd.reactor;
+package com.hnd.reactor.simple;
 
 import org.reactivestreams.Subscription;
 import reactor.core.publisher.Flux;

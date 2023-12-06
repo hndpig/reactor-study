@@ -1,4 +1,4 @@
-package com.hnd.reactor;
+package com.hnd.reactor.simple;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
