@@ -63,7 +63,6 @@ public class BaseSubscriberTest {
                  if (value == 1) {
                      request(2);
                  }
-
              }
 
              @Override
