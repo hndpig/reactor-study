@@ -16,7 +16,7 @@ import java.time.Duration;
 public class SchedulersTest {
     public static void main(String[] args) {
         Flux<Long> interval = Flux.interval(Duration.ofMillis(1));
-        interval.map(i->i)
+        interval.map(i -> i)
                 .subscribe(System.out::println);
         interval.blockLast();
     }
@@ -29,7 +29,7 @@ public class SchedulersTest {
             throw new RuntimeException(e);
         }
         for (int i = 0; i < 5; i++) {
-            new Thread(()->{
+            new Thread(() -> {
                 hnd.schedule(() -> {
                     System.out.println(Thread.currentThread().getName());
                 });
@@ -37,10 +37,15 @@ public class SchedulersTest {
         }
     }
 
+    /*
+     * @Author hnd
+     * @Date 16:48 2023/12/12
+     * 创建一个线程池，创建线程池的大小与 CPU 个数等同
+     **/
     private static void parallel() {
         Scheduler parallel = Schedulers.parallel();//有个线程池
         for (int i = 0; i < 5; i++) {
-            new Thread(()->{
+            new Thread(() -> {
                 parallel.schedule(() -> {
                     System.out.println(Thread.currentThread().getName());
                 });
@@ -48,12 +53,17 @@ public class SchedulersTest {
         }
     }
 
+    /*
+     * @Author hnd
+     * @Date 16:48 2023/12/12
+     * 创建一个弹性线程池，线程等待时间过长会被废弃
+     **/
     private static void elastic() {
-       
+
         Scheduler hnd = Schedulers.elastic();//弹性线程池，等待过长会废弃
 //        Scheduler hnd = Schedulers.newElastic("hnd");
         for (int i = 0; i < 5; i++) {
-            new Thread(()->{
+            new Thread(() -> {
                 hnd.schedule(() -> {
                     System.out.println(Thread.currentThread().getName());
                 });
@@ -61,17 +71,26 @@ public class SchedulersTest {
         }
     }
 
+    /*
+     * @Author hnd
+     * @Date 16:49 2023/12/12
+     *创建一个可重用的的单线程，直到序列被废弃
+     **/
     private static void newSingle() {
         Scheduler myThread = Schedulers.newSingle("myThread");
         for (int i = 0; i < 5; i++) {
-            new Thread(()->{
+            new Thread(() -> {
                 myThread.schedule(() -> {
                     System.out.println(Thread.currentThread().getName());
                 });
             }).start();
         }
     }
-
+    /*
+     * @Author hnd
+     * @Date 16:50 2023/12/12
+     *使用当前线程
+     **/
     private static void immediate() throws InterruptedException {
         Scheduler immediate = Schedulers.immediate();
         for (int i = 0; i < 5; i++) {
